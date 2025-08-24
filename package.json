@@ -1,0 +1,20 @@
+{
+  "name": "node_skia_ui",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@preact/signals-core": "^1.12.1",
+    "skia-canvas": "^3.0.3",
+    "yoga-layout": "^3.2.1"
+  },
+  "trustedDependencies": [
+    "skia-canvas"
+  ]
+}
