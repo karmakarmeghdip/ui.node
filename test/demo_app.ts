@@ -1,6 +1,6 @@
 import { Edge, FlexDirection, Align, Justify } from "yoga-layout";
-import { Element } from "./elements/canvas/Element"
-import { Text } from "./elements/canvas/Text";
+import { Element } from "../src/elements/canvas/Element"
+import { Text } from "../src/elements/canvas/Text";
 
 
 export const demo_app = () => {

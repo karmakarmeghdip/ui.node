@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@preact/signals-core": "^1.12.1",
-    "skia-canvas": "^3.0.3",
+    "skia-canvas": "3.0.4",
     "yoga-layout": "^3.2.1"
   },
   "trustedDependencies": [

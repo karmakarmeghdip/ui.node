@@ -1,5 +1,5 @@
 import { Window } from "skia-canvas";
-import { demo_app } from "./src/demo_app";
+import { demo_app } from "./test/demo_app";
 import { Direction } from "yoga-layout";
 import { Text } from "./src/elements/canvas/Text";
 
