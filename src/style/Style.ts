@@ -1,4 +1,6 @@
+import type { Signal } from "@preact/signals-core";
 import { Display, Edge, Gutter, Wrap, type Align, type Direction, type FlexDirection, type Justify, type Node } from "yoga-layout";
+import type { UINode } from "../elements";
 
 export type Style = {
     flexDirection?: FlexDirection;
@@ -31,6 +33,7 @@ export type Style = {
 }
 
 export function applyStyleToNode(node: Node, style: Style) {
+    let repaintNeeded = false;
     if (style.flexDirection) {
         node.setFlexDirection(style.flexDirection);
     }
@@ -97,4 +100,29 @@ export function applyStyleToNode(node: Node, style: Style) {
     if (style.position) {
         node.setPosition(style.position.edge, style.position.position);
     }
+    if (style.color) {
+        repaintNeeded = true;
+    }
+    if (style.backgroundColor) {
+        repaintNeeded = true;
+    }
+    if (style.borderColor) {
+        repaintNeeded = true;
+    }
+    if (style.fontFamily) {
+        repaintNeeded = true;
+    }
+    if (style.fontSize) {
+        repaintNeeded = true;
+    }
+    return repaintNeeded;
+}
+
+export function listenToStyleChanges(node: UINode) {
+    node.style.subscribe((newStyle) => {
+        const repaintNeeded = applyStyleToNode(node.yogaNode, newStyle);
+        if (repaintNeeded) {
+            node.repaint.value = true;
+        }
+    });
 }
