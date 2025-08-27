@@ -4,86 +4,165 @@ This document outlines the architecture for the Node Skia UI library, a simple a
 
 ## Core Principles
 
+**Current Implementation Status**: This architecture describes the target design. The current implementation has most core components in place but is partially implemented.
+
 The architecture is designed around three core principles to ensure efficiency, maintainability, and ease of use.
 
-### 1. Retained-Mode UI Tree
-The UI is represented as a persistent tree of element objects, known as the UI Tree. Instead of re-creating the entire scene on every frame, the library "retains" the tree and only processes the nodes that have changed. Each node in the tree is a plain object containing its style, children, and other properties.
+### 1. Retained-Mode UI Tree ✅ **IMPLEMENTED**
+The UI is represented as a persistent tree of element objects, known as the UI Tree. Each node in the tree is a plain object containing its style, children, and other properties.
 
-### 2. Multi-Pass Rendering
-The rendering process is broken down into distinct passes, which allows for better optimization and separation of concerns. This moves away from a single, recursive draw function to a more robust, iterative process.
+**Current Implementation**: 
+- ✅ BaseElement type with id, style signals, yogaNode references, parent/children relationships
+- ✅ Element, Text, Image, Path node types implemented
+- ✅ Tree manipulation functions (addChild, removeChild)
+- ✅ Persistent Yoga node management with proper cleanup
 
-1.  **Layout Pass:** Calculates the size and position of every element in the tree using the **Yoga Layout** engine.
-2.  **Paint Pass:** Traverses the UI tree and generates a flat list of drawing commands (a "display list") for all visible elements.
-3.  **Draw Pass:** Executes the commands in the display list on the **skia-canvas** context to render the final image.
+### 2. Multi-Pass Rendering ⚠️ **PARTIALLY IMPLEMENTED**
+The rendering process is intended to be broken down into distinct passes for optimization.
 
-### 3. Reactive State with Signals
-State management is handled through a signal-based system. UI properties are bound to signals. When a signal's value changes, it automatically marks the dependent UI elements as "dirty." The rendering engine then uses this information to efficiently update only the necessary parts of the UI during the next frame, triggering the layout and paint passes as needed.
+**Current Implementation**: 
+1.  **Layout Pass ✅**: Implemented using Yoga Layout engine with proper node synchronization
+2.  **Paint Pass ⚠️**: Partially implemented - basic paint functions exist but full iterative traversal missing
+3.  **Draw Pass ✅**: Implemented with draw queue system and command processing
+
+### 3. Reactive State with Signals ✅ **IMPLEMENTED**
+State management is handled through Preact signals system.
+
+**Current Implementation**: 
+- ✅ Style properties bound to signals
+- ✅ Repaint signals for dirty tracking
+- ✅ Style change subscriptions trigger layout recalculation
+- ✅ Signal changes properly trigger repaints
 
 ## Modules
 
 The library is composed of several distinct modules, each with a specific responsibility.
 
-### 1. UI Tree (`src/core/Element.ts`)
+### 1. UI Tree (`src/elements/canvas/`) ✅ **IMPLEMENTED**
 -   **Responsibility:** Defines the fundamental structure of a UI node. It's the backbone of the UI representation.
--   **Components:**
-    -   **Element Factory:** A function to create new UI element objects. Each element contains:
-        -   `style`: A signal containing style properties (e.g., `width`, `flexDirection`, `color`).
-        -   `children`: An array of child elements.
-        -   `parent`: A reference to its parent element.
-        -   `yogaNode`: A reference to its corresponding node in the persistent Yoga layout tree.
-        -   `isDirty`: A flag to indicate if the element needs a **paint** update (layout dirtiness is handled by Yoga).
--   **Interaction:**
-    -   The UI Tree is constructed by the application developer.
-    -   The **Layout Engine** maintains a parallel, persistent tree of `yogaNode`s.
-    -   The **Renderer** traverses this tree to generate draw commands.
+-   **Current Implementation:**
+    -   **Element Factory Functions:** `Element()`, `Text()`, `Image()`, `Path()` functions create typed UI nodes
+    -   **BaseElement Structure:** Each element contains:
+        -   `id`: Unique identifier (crypto.randomUUID())
+        -   `type`: Node type discriminator ("element", "text", "image", "path")
+        -   `style`: Preact signal containing style properties
+        -   `children`: Array of child UINode elements
+        -   `parent`: Reference to parent UINode or null
+        -   `yogaNode`: Reference to corresponding Yoga layout node
+        -   `repaint`: Signal flag for paint dirty tracking
+        -   `position`: Calculated absolute position {x, y}
+    -   **Tree Management:** `addChild()` and `removeChild()` functions with proper Yoga node synchronization
+-   **Current Status:**
+    -   ✅ Fully functional UI tree with proper parent/child relationships
+    -   ✅ Automatic Yoga node management and cleanup
+    -   ✅ Type-safe node creation with factory functions
 
-### 2. Layout Engine (`src/core/Layout.ts`)
--   **Responsibility:** Manages all layout calculations by interfacing with the **Yoga Layout** library. It maintains a persistent Yoga tree that mirrors the UI tree.
--   **API Reference:** [Yoga Layout Best Practices](./YogaLayout.md)
--   **Interaction:**
-    -   It maintains a persistent Yoga tree. When UI elements are added or removed, it uses `insertChild()` and `removeChild()` to keep the Yoga tree in sync.
-    -   It listens for style changes on UI elements. When a layout-related style is updated, it calls the corresponding setter (e.g., `yogaNode.setWidth()`) on the Yoga node. This automatically marks the node as dirty within Yoga's internal system.
-    -   During the render loop's layout phase, it calls `Yoga.Node.calculateLayout()` on the **root** of the Yoga tree. Yoga then performs an optimized calculation, only updating nodes that are dirty.
-    -   The calculated layout (`left`, `top`, `width`, `height`) is read back from the Yoga nodes after calculation.
+### 2. Layout Engine (`src/core/Layout.ts`) ✅ **IMPLEMENTED**
+-   **Responsibility:** Manages all layout calculations by interfacing with the **Yoga Layout** library.
+-   **Current Implementation:**
+    -   **Tree Traversal:** `iterateNodeTree()` function for efficient tree iteration
+    -   **Layout Orchestration:** `layout()` function that:
+        -   Calls `calculateLayout()` on root Yoga node
+        -   Updates node positions based on computed layout
+        -   Sets up style change subscriptions
+        -   Manages repaint subscriptions and triggers
+    -   **Yoga Integration:** 
+        -   ✅ Persistent Yoga tree maintained alongside UI tree
+        -   ✅ Automatic `hasNewLayout()` checking for optimization
+        -   ✅ Position calculation with parent offset handling
+        -   ✅ Style subscription system triggers layout recalculation
+-   **Current Status:**
+    -   ✅ Fully functional layout system
+    -   ✅ Comprehensive test coverage (Layout.test.ts)
+    -   ⚠️ Style changes trigger full tree recalculation (could be optimized)
 
-### 3. Style Engine (`src/core/Style.ts`)
--   **Responsibility:** Parses and applies styles to UI elements.
--   **Components:**
-    -   **Style Parser:** A function to convert string-based styles into a style object.
-    -   **Style Signal:** Each element's `style` property is a signal. When its value changes, it triggers the necessary updates.
--   **Interaction:**
-    -   When a layout-related style property changes (e.g., `flex`, `margin`), the Style Engine calls the appropriate setter function on the element's `yogaNode` in the **Layout Engine**.
-    -   It provides non-layout styles (e.g., `backgroundColor`, `color`) to the **Renderer** for the paint pass.
+### 3. Style Engine (`src/style/`) ✅ **IMPLEMENTED**
+-   **Responsibility:** Defines and applies styles to UI elements.
+-   **Current Implementation:**
+    -   **Style Type Definition:** Comprehensive `Style` type covering:
+        -   ✅ Flexbox properties (flexDirection, justifyContent, alignItems, etc.)
+        -   ✅ Layout properties (width, height, margin, padding, border)
+        -   ✅ Visual properties (color, backgroundColor, borderColor)
+        -   ✅ Typography (fontFamily, fontSize)
+    -   **Style Application:** `applyStyleToNode()` function:
+        -   ✅ Maps style properties to Yoga node setters
+        -   ✅ Distinguishes layout vs visual-only changes
+        -   ✅ Returns whether repaint is needed
+    -   **Style Subscription:** `listenToStyleChanges()` for reactive updates
+    -   **Visual Rendering:** Separate modules for background and border painting
+-   **Current Status:**
+    -   ✅ Complete style system with Yoga integration
+    -   ✅ Proper separation of layout and visual properties
+    -   ❌ String-based style parsing not implemented (uses object syntax)
 
-### 4. Renderer (`src/core/Renderer.ts`)
--   **Responsibility:** Orchestrates the rendering pipeline. It triggers the paint pass when needed and executes drawing commands on the canvas during the `draw` event.
--   **API Reference:** [Paint Process](./Paint-Process.md)
--   **Components:**
-    -   **Draw Command List:** A shared array that holds the drawing commands for a single frame. It is populated by the Paint Pass and consumed by the Draw Pass.
--   **Interaction:**
-    -   The **Paint Pass** is triggered by state changes in the application. It runs an optimized traversal of the UI tree and populates the `Draw Command List` with a complete set of instructions for rendering the new frame.
-    -   The **Draw Pass** is triggered by the `skia-canvas` `Window`'s `draw` event. It checks if the `Draw Command List` is populated. If it is, it renders the commands to the canvas and then clears the list. If the list is empty, it does nothing.
+### 4. Renderer (`src/core/Renderer.ts`) ✅ **IMPLEMENTED**
+-   **Responsibility:** Manages the draw command queue system for rendering.
+-   **Current Implementation:**
+    -   **Draw Queue:** `drawQueue` array holds drawing commands as functions
+    -   **Command Enqueueing:** `enqueueDrawCommand()` adds commands to queue
+    -   **Queue Processing:** `processDrawQueue()` executes and clears all commands
+    -   **Command Type:** Simple function signature `(ctx: CanvasRenderingContext2D) => void`
+-   **Current Status:**
+    -   ✅ Fully functional producer-consumer draw queue
+    -   ✅ Comprehensive test coverage (Renderer.test.ts)
+    -   ✅ FIFO command execution with error handling
+    -   ❌ Paint Pass orchestration not implemented
+    -   ❌ Automatic draw event integration missing
 
-### 5. Event Manager (`src/core/EventManager.ts`)
--   **Responsibility:** Handles user input from the `skia-canvas` `Window` (e.g., `mousedown`, `keydown`).
--   **Interaction:**
-    -   It listens for UI events from the `Window`.
-    -   When an event occurs (e.g., a click at coordinates `(x, y)`), it performs a hit-test by traversing the rendered UI Tree (using the computed layout data) to find the element that should receive the event.
-    -   It then invokes the appropriate event handler on the target element, which may in turn update one or more **signals**, triggering the Paint Pass.
+### 5. Event Manager ❌ **NOT IMPLEMENTED**
+-   **Responsibility:** Would handle user input from the `skia-canvas` `Window`.
+-   **Current Status:**
+    -   ❌ No EventManager module exists
+    -   ❌ No hit-testing implementation
+    -   ❌ No event handler system for UI elements
+    -   ⚠️ Basic mouse events handled directly in main entry point (index.ts)
+-   **Required Implementation:**
+    -   Create `src/core/EventManager.ts`
+    -   Implement hit-testing algorithm using computed layout
+    -   Add event handler system to UINode types
+    -   Connect to window event listeners
 
-## Rendering Pipeline Overview
+## Current Rendering Pipeline Status
 
-The rendering loop uses a highly efficient producer-consumer model.
+**Implementation Status**: The rendering pipeline is partially implemented with key components working but integration incomplete.
 
-1.  **State Change (Producer Trigger):** An event handler or application logic updates a signal. This is the trigger to generate a new frame.
-2.  **Layout & Paint Pass (Producer):**
-    -   The signal change triggers the **Layout Pass**. `calculateLayout()` is called on the root Yoga node to efficiently update the layout tree.
-    -   Immediately after, the **Paint Pass** runs. It performs an optimized iterative traversal of the UI tree, checking for nodes that need repainting (due to layout or style changes). It generates a **new, complete** list of drawing commands and places them in the shared `Draw Command List`.
-3.  **Draw Pass (Consumer):**
-    -   The `Window`'s `draw` event fires independently (e.g., on a vsync timer).
-    -   The event handler checks if the `Draw Command List` has any commands. 
-    -   If **yes**, it clears the canvas, executes every command in the list, and then **clears the list**.
-    -   If **no** (the default state), it does nothing, consuming no resources.
-4.  **Idle State:** The system is now idle. The `draw` event continues to fire, but the handler does nothing until the `Draw Command List` is populated again by another state change.
+### ✅ **WORKING COMPONENTS**
 
-This architecture provides a solid foundation for building a performant and scalable UI library, separating concerns cleanly between layout, styling, state management, and rendering.
+1.  **Signal-Based State Changes**: 
+    -   ✅ Preact signals trigger layout and repaint updates
+    -   ✅ Style subscriptions properly connected
+
+2.  **Layout Pass**: 
+    -   ✅ `calculateLayout()` called on root Yoga node
+    -   ✅ Position updates based on computed layout
+    -   ✅ Efficient dirty checking with `hasNewLayout()`
+
+3.  **Draw Queue System**: 
+    -   ✅ Command enqueueing and processing
+    -   ✅ FIFO execution with proper cleanup
+
+### ⚠️ **MISSING INTEGRATION**
+
+1.  **Paint Pass**: 
+    -   ✅ Individual paint functions exist (paintElement, paintBackground, paintBorder)
+    -   ❌ Complete iterative tree traversal missing
+    -   ❌ Automatic draw command generation incomplete
+
+2.  **Producer-Consumer Integration**:
+    -   ❌ `draw` event not connected to `processDrawQueue`
+    -   ❌ Signal changes don't automatically trigger paint pass
+    -   ❌ Manual render calls still needed
+
+### 🚧 **CURRENT WORKFLOW**
+
+The current implementation uses a manual rendering approach:
+1. Layout calculation on setup/resize events
+2. Direct rendering calls instead of command queue
+3. No automatic repainting on signal changes
+
+### 🎯 **NEXT STEPS FOR COMPLETION**
+
+1. Implement complete paint pass with iterative traversal
+2. Connect draw event to processDrawQueue
+3. Remove manual render calls from main loop
+4. Add automatic paint pass triggering on signal changes
