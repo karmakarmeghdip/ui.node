@@ -1,10 +1,10 @@
 import { expect, test, describe, beforeEach, afterEach, mock, spyOn } from "bun:test";
-import { Element } from "../elements/canvas/Element";
-import { Text } from "../elements/canvas/Text";
-import { iterateNodeTree, layout } from "./Layout";
+import { Element } from "../../src/elements/canvas/Element";
+import { Text } from "../../src/elements/canvas/Text";
+import { iterateNodeTree, setupLayout } from "../../src/core/Layout";
 import { signal } from "@preact/signals-core";
-import * as canvasModule from "../elements/canvas";
-import type { UINode } from "../elements/canvas";
+import * as canvasModule from "../../src/elements/canvas";
+import type { UINode } from "../../src/elements/canvas";
 import Yoga from "yoga-layout";
 
 // Mock paintNode to track paint calls
@@ -238,7 +238,7 @@ describe("Layout Module Comprehensive Tests", () => {
             const node = Element({ width: 100, height: 50 });
 
             // Test that layout function can be called without throwing
-            expect(() => layout(node, 200, 100)).not.toThrow();
+            expect(() => setupLayout(node, 200, 100)).not.toThrow();
 
             expect(node.yogaNode.getComputedWidth()).toBe(100);
             expect(node.yogaNode.getComputedHeight()).toBe(50);
@@ -252,7 +252,7 @@ describe("Layout Module Comprehensive Tests", () => {
                 Element({ width: 50, height: 50 })
             );
 
-            expect(() => layout(parentNode, 200, 100)).not.toThrow();
+            expect(() => setupLayout(parentNode, 200, 100)).not.toThrow();
 
             expect(parentNode.yogaNode.getComputedWidth()).toBe(200);
             expect(parentNode.children[0]?.yogaNode.getComputedWidth()).toBe(50);
@@ -261,7 +261,7 @@ describe("Layout Module Comprehensive Tests", () => {
         test("should set up subscriptions correctly", () => {
             const node = Element({ width: 100, height: 50 });
 
-            layout(node, 200, 100);
+            setupLayout(node, 200, 100);
 
             // Verify initial layout was calculated
             expect(node.yogaNode.getComputedWidth()).toBe(100);
@@ -306,7 +306,7 @@ describe("Layout Module Comprehensive Tests", () => {
             const node = Element({ width: 100, height: 50 });
 
             // The layout function internally calls layoutNodeAndChildren
-            layout(node, 200, 100);
+            setupLayout(node, 200, 100);
 
             // Verify layout was calculated
             expect(node.yogaNode.getComputedWidth()).toBe(100);
@@ -326,7 +326,7 @@ describe("Layout Module Comprehensive Tests", () => {
                 })
             );
 
-            layout(parentNode, 200, 100);
+            setupLayout(parentNode, 200, 100);
 
             // Verify child position includes margin
             expect(parentNode.children[0]?.position?.x).toBeGreaterThanOrEqual(20);

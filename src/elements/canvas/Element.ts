@@ -42,6 +42,7 @@ export function Element(style: Style, ...children: UINode[]): UINode {
 
 export function paintElement(element: Element) {
     if (!element.repaint.value) return;
+    console.log(`Painting element ${element.type} (id: ${element.id})`);
     const x = (element.position?.x ?? 0);
     const y = (element.position?.y ?? 0);
     enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));

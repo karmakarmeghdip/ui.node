@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeEach, afterEach, mock } from "bun:test";
-import { enqueueDrawCommand, processDrawQueue, drawQueue } from "./Renderer";
+import { enqueueDrawCommand, processDrawQueue, drawQueue } from "../../src/core/Renderer";
 import type { CanvasRenderingContext2D } from "skia-canvas";
 
 // Mock CanvasRenderingContext2D for testing

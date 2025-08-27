@@ -25,21 +25,24 @@ export function iterateNodeTree(node: UINode, callback: (node: UINode) => void) 
  * @param width The width to layout the node.
  * @param height The height to layout the node.
  */
-function layoutNodeAndChildren(node: UINode, width: number, height: number) {
+export function layoutNodeAndChildren(node: UINode, width: number, height: number) {
     node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
     iterateNodeTree(node, (n) => {
         if (n.yogaNode.hasNewLayout()) {
-            n.repaint.value = true;
             n.position = {
                 x: n.parent?.position?.x || 0 + n.yogaNode.getComputedLeft(),
                 y: n.parent?.position?.y || 0 + n.yogaNode.getComputedTop(),
             };
+            console.log(`Node ${n.type} (id: ${n.id}) position: (${n.position.x}, ${n.position.y})`);
         }
     });
+    if (!node.repaint.value)
+        node.repaint.value = true; // Mark node for repaint
 }
 
 // Call at setup
-export function layout(node: UINode, width: number, height: number) {
+export function setupLayout(node: UINode, width: number, height: number) {
+    console.log("Initial layout setup");
     layoutNodeAndChildren(node, width, height);
     // Subscribe to style changes and relayout the node and its children
     iterateNodeTree(node, (n) => {
@@ -51,9 +54,8 @@ export function layout(node: UINode, width: number, height: number) {
         n.repaint.subscribe(() => {
             // Paint the element if it needs repainting
             if (n.repaint.value) {
-                // Prevent cycle by setting repaint to false immediately
-                n.repaint.value = false;
                 paintNode(n);
+                n.repaint.value = false;
                 // Mark children for repaint
                 for (const child of n.children) {
                     child.repaint.value = true;
@@ -61,4 +63,5 @@ export function layout(node: UINode, width: number, height: number) {
             }
         });
     });
+    node.repaint.value = true;
 }

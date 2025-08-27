@@ -1,10 +1,13 @@
 {
-  "name": "node_skia_ui",
+  "name": "ui.node",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "license": "MIT",
+  "scripts": {},
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tsx": "^4.20.5"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -15,6 +18,7 @@
     "yoga-layout": "^3.2.1"
   },
   "trustedDependencies": [
+    "esbuild",
     "skia-canvas"
   ]
 }
