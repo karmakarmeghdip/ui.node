@@ -1,4 +1,3 @@
-import type { Signal } from "@preact/signals-core";
 import { Display, Edge, Gutter, Wrap, type Align, type Direction, type FlexDirection, type Justify, type Node } from "yoga-layout";
 import type { UINode } from "../elements/canvas";
 

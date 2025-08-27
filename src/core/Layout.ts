@@ -43,15 +43,18 @@ export function layout(node: UINode, width: number, height: number) {
     layoutNodeAndChildren(node, width, height);
     // Subscribe to style changes and relayout the node and its children
     iterateNodeTree(node, (n) => {
+        // Style subscription should not cause cycles
         n.style.subscribe(() => {
             layoutNodeAndChildren(node, width, height);
         });
+        // Repaint subscription - only handle painting, avoid relayout cycles
         n.repaint.subscribe(() => {
             // Paint the element if it needs repainting
             if (n.repaint.value) {
-                layoutNodeAndChildren(node, width, height);
-                paintNode(n);
+                // Prevent cycle by setting repaint to false immediately
                 n.repaint.value = false;
+                paintNode(n);
+                // Mark children for repaint
                 for (const child of n.children) {
                     child.repaint.value = true;
                 }
