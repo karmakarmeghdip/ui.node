@@ -1,4 +1,5 @@
-import type { UINode } from "../elements";
+import Yoga from "yoga-layout";
+import { paintNode, type UINode } from "../elements/canvas";
 
 
 /**
@@ -17,3 +18,44 @@ export function iterateNodeTree(node: UINode, callback: (node: UINode) => void) 
     }
 }
 
+/**
+ * Layouts the node and its children using Yoga layout engine.
+ * Call this function whenever the layout needs to be recalculated like resize or orientation change.
+ * @param node The root UINode to layout.
+ * @param width The width to layout the node.
+ * @param height The height to layout the node.
+ */
+function layoutNodeAndChildren(node: UINode, width: number, height: number) {
+    node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
+    iterateNodeTree(node, (n) => {
+        if (n.yogaNode.hasNewLayout()) {
+            n.repaint.value = true;
+            n.position = {
+                x: n.parent?.position?.x || 0 + n.yogaNode.getComputedLeft(),
+                y: n.parent?.position?.y || 0 + n.yogaNode.getComputedTop(),
+            };
+        }
+    });
+}
+
+// Call at setup
+export function layout(node: UINode, width: number, height: number) {
+    layoutNodeAndChildren(node, width, height);
+    // Subscribe to style changes and relayout the node and its children
+    iterateNodeTree(node, (n) => {
+        n.style.subscribe(() => {
+            layoutNodeAndChildren(node, width, height);
+        });
+        n.repaint.subscribe(() => {
+            // Paint the element if it needs repainting
+            if (n.repaint.value) {
+                layoutNodeAndChildren(node, width, height);
+                paintNode(n);
+                n.repaint.value = false;
+                for (const child of n.children) {
+                    child.repaint.value = true;
+                }
+            }
+        });
+    });
+}

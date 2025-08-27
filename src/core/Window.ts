@@ -1,5 +1,5 @@
 import { App, Window, type WindowOptions } from "skia-canvas";
-import type { UINode } from "../elements";
+import type { UINode } from "../elements/canvas";
 
 const rootNodes: { [key: number]: UINode } = {};
 
