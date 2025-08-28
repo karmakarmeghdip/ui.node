@@ -41,10 +41,10 @@ export function closeWindow(window: Window): void {
 
 function setupHandlers(window: Window, root: UINode) {
 
-    // window.on("setup", (e) => {
-    //     console.log("SETUP EVENT FIRED for window", App.windows.indexOf(e.target));
-    //     setupLayout(root, e.target.width, e.target.height);
-    // });
+    window.on("setup", (e) => { // This is not being fired?
+        console.log("SETUP EVENT FIRED for window", App.windows.indexOf(e.target));
+        //     setupLayout(root, e.target.width, e.target.height);
+    });
 
     setupLayout(root, window.width, window.height);
 
@@ -53,7 +53,7 @@ function setupHandlers(window: Window, root: UINode) {
         layoutNodeAndChildren(root, e.target.width, e.target.height);
     });
 
-    window.on("draw", (e) => {
+    window.on("frame", (e) => {
         // console.log("DRAW EVENT for window", App.windows.indexOf(e.target));
         processDrawQueue(e.target.ctx);
     });

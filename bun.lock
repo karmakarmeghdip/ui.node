@@ -9,6 +9,7 @@
         "yoga-layout": "^3.2.1",
       },
       "devDependencies": {
+        "@preact/signals-debug": "^1.0.0",
         "@types/bun": "latest",
         "tsx": "^4.20.5",
       },
@@ -75,6 +76,8 @@
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.9", "", { "os": "win32", "cpu": "x64" }, "sha512-PPOl1mi6lpLNQxnGoyAfschAodRFYXJ+9fs6WHXz7CSWKbOqiMZsubC+BQsVKuul+3vKLuwTHsS2c2y9EoKwxQ=="],
 
     "@preact/signals-core": ["@preact/signals-core@1.12.1", "", {}, "sha512-BwbTXpj+9QutoZLQvbttRg5x3l5468qaV2kufh+51yha1c53ep5dY4kTuZR35+3pAZxpfQerGJiQqg34ZNZ6uA=="],
+
+    "@preact/signals-debug": ["@preact/signals-debug@1.0.0", "", { "peerDependencies": { "@preact/signals-core": ">=1.12.0" } }, "sha512-Qzy6Os2V+vU8BrwnvyGQtGhGZOQRzTLZJzjEEdGFdL+8ygvOEv0pjjoPQxtcxSNYo5v+UEFhPwC+1ZwzczHzpA=="],
 
     "@types/bun": ["@types/bun@1.2.20", "", { "dependencies": { "bun-types": "1.2.20" } }, "sha512-dX3RGzQ8+KgmMw7CsW4xT5ITBSCrSbfHc36SNT31EOUg/LA9JWq0VDdEXDRSe1InVWpd2yLUM1FUF/kEOyTzYA=="],
 

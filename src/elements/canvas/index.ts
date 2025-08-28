@@ -1,3 +1,4 @@
+import { iterateNodeTree } from "../../core/Layout";
 import { paintElement, type Element } from "./Element";
 import type { Image } from "./Image";
 import type { Path } from "./Path";
@@ -10,7 +11,9 @@ export function addChild(parent: UINode, child: UINode) {
     parent.children.push(child);
     child.parent = parent;
     parent.yogaNode.insertChild(child.yogaNode, parent.yogaNode.getChildCount());
-    parent.repaint.value = true;
+    iterateNodeTree(parent, n => {
+        paintNode(n);
+    })
 }
 
 export function removeChild(parent: UINode, child: UINode) {
@@ -20,11 +23,14 @@ export function removeChild(parent: UINode, child: UINode) {
         child.parent = null;
         parent.yogaNode.removeChild(child.yogaNode);
         child.yogaNode.freeRecursive();
-        parent.repaint.value = true;
+        iterateNodeTree(parent, n => {
+            paintNode(n);
+        });
     }
 }
 
 export function paintNode(node: UINode) {
+    console.log(`Painting node ${node.type} (id: ${node.id})`);
     switch (node.type) {
         case "element":
             paintElement(node);

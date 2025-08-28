@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {},
   "devDependencies": {
+    "@preact/signals-debug": "^1.0.0",
     "@types/bun": "latest",
     "tsx": "^4.20.5"
   },

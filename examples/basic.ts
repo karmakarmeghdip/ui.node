@@ -1,6 +1,6 @@
 import { Align, Edge, FlexDirection, Justify } from "yoga-layout";
 import { Element } from "../src/elements/canvas";
-import { closeWindowId, createWindow } from "../src/core/Window";
+import { createWindow } from "../src/core/Window";
 import { printTree } from "../src/utils/printTree";
 import { App } from "skia-canvas";
 

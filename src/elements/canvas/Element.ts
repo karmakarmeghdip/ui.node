@@ -12,7 +12,7 @@ export type BaseElement = {
     style: Signal<Style>;
     yogaNode: Node;
     position?: { x: number, y: number };
-    repaint: Signal<boolean>;
+    repaint: boolean;
     parent: UINode | null;
     children: UINode[];
 };
@@ -29,7 +29,7 @@ export function Element(style: Style, ...children: UINode[]): UINode {
         type: "element",
         style: signal(style),
         yogaNode,
-        repaint: signal(true),
+        repaint: true,
         parent: null,
         children,
     };
@@ -41,11 +41,10 @@ export function Element(style: Style, ...children: UINode[]): UINode {
 }
 
 export function paintElement(element: Element) {
-    if (!element.repaint.value) return;
-    console.log(`Painting element ${element.type} (id: ${element.id})`);
+    if (!element.repaint) return;
     const x = (element.position?.x ?? 0);
     const y = (element.position?.y ?? 0);
     enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));
     enqueueDrawCommand((ctx) => paintBorder(ctx, x, y, element));
-    element.repaint.value = false;
+    element.repaint = false;
 }

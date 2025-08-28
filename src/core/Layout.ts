@@ -25,43 +25,38 @@ export function iterateNodeTree(node: UINode, callback: (node: UINode) => void) 
  * @param width The width to layout the node.
  * @param height The height to layout the node.
  */
-export function layoutNodeAndChildren(node: UINode, width: number, height: number) {
-    node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
+export function layoutNodeAndChildren(node: UINode, width?: number, height?: number) {
+    if (node.yogaNode.getComputedWidth() !== width || node.yogaNode.getComputedHeight() !== height) {
+        node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
+    }
     iterateNodeTree(node, (n) => {
         if (n.yogaNode.hasNewLayout()) {
             n.position = {
                 x: n.parent?.position?.x || 0 + n.yogaNode.getComputedLeft(),
                 y: n.parent?.position?.y || 0 + n.yogaNode.getComputedTop(),
             };
+            n.repaint = true; // Mark node for repaint
             console.log(`Node ${n.type} (id: ${n.id}) position: (${n.position.x}, ${n.position.y})`);
+            n.yogaNode.markLayoutSeen();
+            paintNode(n);
         }
     });
-    if (!node.repaint.value)
-        node.repaint.value = true; // Mark node for repaint
+
 }
 
 // Call at setup
 export function setupLayout(node: UINode, width: number, height: number) {
-    console.log("Initial layout setup");
+    console.log("layout calc line 45");
     layoutNodeAndChildren(node, width, height);
     // Subscribe to style changes and relayout the node and its children
     iterateNodeTree(node, (n) => {
         // Style subscription should not cause cycles
         n.style.subscribe(() => {
-            layoutNodeAndChildren(node, width, height);
-        });
-        // Repaint subscription - only handle painting, avoid relayout cycles
-        n.repaint.subscribe(() => {
-            // Paint the element if it needs repainting
-            if (n.repaint.value) {
-                paintNode(n);
-                n.repaint.value = false;
-                // Mark children for repaint
-                for (const child of n.children) {
-                    child.repaint.value = true;
-                }
-            }
+            console.log("layout calc line 51");
+            if (n.parent)
+                layoutNodeAndChildren(n, n.parent.yogaNode.getComputedWidth(), n.parent.yogaNode.getComputedHeight());
+            else
+                layoutNodeAndChildren(n, width, height);
         });
     });
-    node.repaint.value = true;
 }
