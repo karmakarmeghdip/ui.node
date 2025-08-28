@@ -35,7 +35,6 @@ export function layoutNodeAndChildren(node: UINode, width?: number, height?: num
                 x: n.parent?.position?.x || 0 + n.yogaNode.getComputedLeft(),
                 y: n.parent?.position?.y || 0 + n.yogaNode.getComputedTop(),
             };
-            n.repaint = true; // Mark node for repaint
             console.log(`Node ${n.type} (id: ${n.id}) position: (${n.position.x}, ${n.position.y})`);
             n.yogaNode.markLayoutSeen();
             paintNode(n);

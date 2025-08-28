@@ -30,6 +30,13 @@ const app = Element({
 
 printTree(app);
 
+app.hovered.subscribe(() => {
+    console.log(`App hovered: ${app.hovered.value}`);
+});
+app.children.map((c, i) => c.hovered.subscribe(() => {
+    console.log(`Child ${i + 1} hovered: ${c.hovered.value}`);
+}));
+
 const { id } = createWindow(app, 800, 600, "Basic Example");
 
 

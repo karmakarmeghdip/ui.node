@@ -2,6 +2,7 @@ import { App, Window, type WindowOptions } from "skia-canvas";
 import type { UINode } from "../elements/canvas";
 import { layoutNodeAndChildren, setupLayout } from "./Layout";
 import { processDrawQueue } from "./Renderer";
+import { handleEvents } from "./Input";
 
 const rootNodes: { [key: number]: UINode } = {};
 
@@ -56,6 +57,16 @@ function setupHandlers(window: Window, root: UINode) {
     window.on("frame", (e) => {
         // console.log("DRAW EVENT for window", App.windows.indexOf(e.target));
         processDrawQueue(e.target.ctx);
+    });
+
+    window.on("mouseup", e => {
+        handleEvents(e, root);
+    });
+    window.on("mousedown", e => {
+        handleEvents(e, root);
+    });
+    window.on("mousemove", e => {
+        handleEvents(e, root);
     });
 
     window.on("close", (e) => {
