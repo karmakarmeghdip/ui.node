@@ -8,44 +8,74 @@ import { paintBorder } from "../../style/Border";
 import { enqueueDrawCommand } from "../../core/Renderer";
 import { currentHoveredNode } from "../../core/Input";
 
+/**
+ * Represents the base properties shared by all UI nodes in the tree.
+ */
 export type BaseElement = {
-    id: string;
-    style: Signal<Style>;
-    yogaNode: Node;
-    position?: { x: number, y: number };
-    clicked: Signal<boolean>;
-    hovered: Signal<boolean>;
-    parent: UINode | null;
-    children: UINode[];
+  /** A unique identifier for the node. */
+  id: string;
+  /** A signal holding the node's style properties. */
+  style: Signal<Style>;
+  /** The Yoga layout node associated with this UI node. */
+  yogaNode: Node;
+  /** The absolute screen position (x, y) of the node, calculated after layout. */
+  position?: { x: number; y: number };
+  /** A signal indicating if the node is currently being clicked. */
+  clicked: Signal<boolean>;
+  /** A computed signal that is true if the mouse is currently hovering over this node. */
+  hovered: Signal<boolean>;
+  /** A reference to the parent UI node, or null if it's the root. */
+  parent: UINode | null;
+  /** An array of child UI nodes. */
+  children: UINode[];
 };
 
+/**
+ * Represents a basic container element in the UI tree.
+ */
 export type Element = BaseElement & {
-    type: "element";
+  /** The type discriminator for this node. */
+  type: "element";
 };
 
+/**
+ * Factory function to create a new Element node.
+ * @param style The initial style properties for the element.
+ * @param children Child UI nodes to be nested within this element.
+ * @returns A new Element node.
+ */
 export function Element(style: Style, ...children: UINode[]): UINode {
-    const yogaNode = Yoga.Node.create();
-    applyStyleToNode(yogaNode, style);
-    const element: Element = {
-        id: crypto.randomUUID(),
-        type: "element",
-        style: signal(style),
-        clicked: signal(false),
-        hovered: computed(() => currentHoveredNode.value === element),
-        yogaNode,
-        parent: null,
-        children,
-    };
-    for (const child of children) {
-        child.parent = element;
-        element.yogaNode.insertChild(child.yogaNode, element.yogaNode.getChildCount());
-    }
-    return element;
+  const yogaNode = Yoga.Node.create();
+  applyStyleToNode(yogaNode, style);
+  const element: Element = {
+    id: crypto.randomUUID(),
+    type: "element",
+    style: signal(style),
+    clicked: signal(false),
+    hovered: computed(() => currentHoveredNode.value === element),
+    yogaNode,
+    parent: null,
+    children,
+  };
+  // Assign parent and insert children into Yoga node
+  for (const child of children) {
+    child.parent = element;
+    element.yogaNode.insertChild(
+      child.yogaNode,
+      element.yogaNode.getChildCount(),
+    );
+  }
+  return element;
 }
 
+/**
+ * Enqueues draw commands to render an Element node.
+ * This includes drawing the background color and borders.
+ * @param element The Element node to paint.
+ */
 export function paintElement(element: Element) {
-    const x = (element.position?.x ?? 0);
-    const y = (element.position?.y ?? 0);
-    enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));
-    enqueueDrawCommand((ctx) => paintBorder(ctx, x, y, element));
+  const x = element.position?.x ?? 0;
+  const y = element.position?.y ?? 0;
+  enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));
+  enqueueDrawCommand((ctx) => paintBorder(ctx, x, y, element));
 }

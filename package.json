@@ -1,16 +1,22 @@
 {
   "name": "ui.node",
-  "module": "index.ts",
+  "version": "0.1.0",
+  "description": "A simple and efficient UI framework for creating graphical user interfaces in Node.js.",
+  "main": "./dist/index.js",
+  "module": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "type": "module",
-  "private": true,
   "license": "MIT",
-  "scripts": {},
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
   "devDependencies": {
     "@preact/signals-debug": "^1.0.0",
     "@types/bun": "latest",
-    "tsx": "^4.20.5"
-  },
-  "peerDependencies": {
+    "tsx": "^4.20.5",
     "typescript": "^5"
   },
   "dependencies": {
