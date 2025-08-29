@@ -1,5 +1,6 @@
 import Yoga from "yoga-layout";
 import { paintNode, type UINode } from "../elements/canvas";
+import { applyStyleToNode } from "../style/Style";
 
 
 /**
@@ -50,8 +51,9 @@ export function setupLayout(node: UINode, width: number, height: number) {
     // Subscribe to style changes and relayout the node and its children
     iterateNodeTree(node, (n) => {
         // Style subscription should not cause cycles
-        n.style.subscribe(() => {
+        n.style.subscribe((s) => {
             console.log("layout calc line 51");
+            applyStyleToNode(n.yogaNode, s);
             if (n.parent)
                 layoutNodeAndChildren(n, n.parent.yogaNode.getComputedWidth(), n.parent.yogaNode.getComputedHeight());
             else

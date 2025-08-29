@@ -40,10 +40,7 @@ The rendering pipeline should be updated to take advantage of this approach.
 1.  **Initialization:** Build the initial UI tree and the corresponding Yoga tree.
 2.  **State Change:** An event handler or application logic updates a style signal on one or more elements.
 3.  **Style Application:** The `StyleEngine` reacts to the signal change and calls the appropriate `yogaNode.set...()` methods for each modified layout property.
-4.  **Layout Pass:** In the main render loop, call `Yoga.Node.calculateLayout()` on the **root node only**. Yoga handles the rest, efficiently computing new layouts for only the affected nodes.
-5.  **Paint Pass:** Traverse the UI tree and read the newly computed layout for each element using:
-    - `yogaNode.getComputedLayout()`
-    This returns an object with `left`, `top`, `width`, and `height` that you can use for drawing.
+4.  **Layout and Paint Pass:** The `layoutNodeAndChildren` function is called. It first calls `Yoga.Node.calculateLayout()` on the root node. It then traverses the tree, and for each node where `yogaNode.getHasNewLayout()` is true, it updates the node's position and immediately calls `paintNode()` to enqueue draw commands. This combines the layout and paint steps into a single, optimized pass.
 
 ## 4. Handling High-DPI Displays
 

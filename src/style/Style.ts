@@ -99,10 +99,3 @@ export function applyStyleToNode(node: Node, style: Style) {
         node.setPosition(style.position.edge, style.position.position);
     }
 }
-
-export function listenToStyleChanges(node: UINode) {
-    node.style.subscribe((newStyle) => {
-        applyStyleToNode(node.yogaNode, newStyle);
-        node.repaint.value = true;
-    });
-}
