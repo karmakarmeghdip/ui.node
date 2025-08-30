@@ -88,11 +88,17 @@ function setupHandlers(window: Window, root: UINode) {
   });
 
   setupLayout(root, window);
+  paintNodeAndChildren(root);
+
+  let win_size = { width: window.width, height: window.height };
 
   window.on("resize", (e) => {
-    console.log("RESIZE EVENT for window", App.windows.indexOf(e.target));
-    layoutNodeAndChildren(root, e.target.width, e.target.height);
-    paintNodeAndChildren(root);
+    if (win_size.width !== e.target.width || win_size.height !== e.target.height) {
+      console.log("RESIZE EVENT for window", App.windows.indexOf(e.target));
+      layoutNodeAndChildren(root, e.target.width, e.target.height);
+      paintNodeAndChildren(root);
+      win_size = { width: e.target.width, height: e.target.height };
+    }
   });
 
   window.on("frame", (e) => {
