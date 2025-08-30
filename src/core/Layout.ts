@@ -1,6 +1,8 @@
 import Yoga from "yoga-layout";
 import { paintNode, type UINode } from "../elements/canvas";
 import { applyStyleToNode } from "../style/Style";
+import type { Window } from "skia-canvas";
+import { calculateTextElementsDimensions } from "../elements/canvas/Text";
 
 /**
  * Iteratively traverses the node tree in a depth-first manner and applies a callback to each node.
@@ -34,12 +36,9 @@ export function layoutNodeAndChildren(
   width?: number,
   height?: number,
 ) {
-  if (
-    node.yogaNode.getComputedWidth() !== width ||
-    node.yogaNode.getComputedHeight() !== height
-  ) {
-    node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
-  }
+
+  node.yogaNode.calculateLayout(width, height, Yoga.DIRECTION_LTR);
+
   iterateNodeTree(node, (n) => {
     if (n.yogaNode.hasNewLayout()) {
       n.position = {
@@ -47,13 +46,20 @@ export function layoutNodeAndChildren(
         y: (n.parent?.position?.y || 0) + n.yogaNode.getComputedTop(),
       };
       console.log(
-        `Node ${n.type} (id: ${n.id}) position: (${n.position.x}, ${n.position.y})`,
+        `Node ${n.type} (id: ${n.id}) position: (${n.position.x}, ${n.position.y}) dimensions: (${n.yogaNode.getComputedWidth()}x${n.yogaNode.getComputedHeight()})`,
       );
       n.yogaNode.markLayoutSeen();
-      paintNode(n);
+      // paintNode(n);
     }
   });
 }
+
+export function paintNodeAndChildren(node: UINode) {
+  iterateNodeTree(node, (n) => {
+    paintNode(n);
+  });
+}
+
 
 /**
  * Sets up the initial layout for the UI tree and establishes reactive updates.
@@ -63,22 +69,19 @@ export function layoutNodeAndChildren(
  * @param width The initial width of the layout.
  * @param height The initial height of the layout.
  */
-export function setupLayout(node: UINode, width: number, height: number) {
-  console.log("layout calc line 45");
-  layoutNodeAndChildren(node, width, height);
+export function setupLayout(node: UINode, window: Window) {
+  // layoutNodeAndChildren(node, window.width, window.height);
   // Subscribe to style changes and relayout the node and its children
   iterateNodeTree(node, (n) => {
-    // Style subscription should not cause cycles
+    if (n.type === "text") {
+      calculateTextElementsDimensions(n, window.ctx);
+    }
+    // TODO: Implement logic to skip initial subscription trigger on all nodes except root
     n.style.subscribe((s) => {
-      console.log("layout calc line 51");
+      console.log(`Style changed for node ${n.type} (id: ${n.id})`);
       applyStyleToNode(n.yogaNode, s);
-      if (n.parent)
-        layoutNodeAndChildren(
-          n,
-          n.parent.yogaNode.getComputedWidth(),
-          n.parent.yogaNode.getComputedHeight(),
-        );
-      else layoutNodeAndChildren(n, width, height);
+      layoutNodeAndChildren(node, window.width, window.height);
+      paintNodeAndChildren(n);
     });
   });
 }

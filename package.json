@@ -15,13 +15,13 @@
   },
   "devDependencies": {
     "@preact/signals-debug": "^1.0.0",
-    "@types/bun": "latest",
+    "@types/bun": "1.2.21",
     "tsx": "^4.20.5",
     "typescript": "^5"
   },
   "dependencies": {
     "@preact/signals-core": "^1.12.1",
-    "skia-canvas": "3.0.4",
+    "skia-canvas": "3.0.6",
     "yoga-layout": "^3.2.1"
   },
   "trustedDependencies": [

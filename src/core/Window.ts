@@ -1,6 +1,6 @@
 import { App, Window, type WindowOptions } from "skia-canvas";
 import type { UINode } from "../elements/canvas";
-import { layoutNodeAndChildren, setupLayout } from "./Layout";
+import { layoutNodeAndChildren, paintNodeAndChildren, setupLayout } from "./Layout";
 import { processDrawQueue } from "./Renderer";
 import { handleEvents } from "./Input";
 
@@ -87,11 +87,12 @@ function setupHandlers(window: Window, root: UINode) {
     //     setupLayout(root, e.target.width, e.target.height);
   });
 
-  setupLayout(root, window.width, window.height);
+  setupLayout(root, window);
 
   window.on("resize", (e) => {
     console.log("RESIZE EVENT for window", App.windows.indexOf(e.target));
     layoutNodeAndChildren(root, e.target.width, e.target.height);
+    paintNodeAndChildren(root);
   });
 
   window.on("frame", (e) => {

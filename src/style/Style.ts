@@ -1,3 +1,4 @@
+import type { CanvasGradient, CanvasPattern, CanvasTexture } from "skia-canvas";
 import {
   Display,
   Edge,
@@ -42,7 +43,7 @@ export type Style = {
   position?: { edge: Edge; position: number | `${number}%` | undefined };
 
   // Visual properties
-  color?: string;
+  color?: string | CanvasGradient | CanvasPattern | CanvasTexture;
   backgroundColor?: string;
   borderColor?: string;
 

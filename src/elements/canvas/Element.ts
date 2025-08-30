@@ -52,7 +52,7 @@ export function Element(style: Style, ...children: UINode[]): UINode {
     type: "element",
     style: signal(style),
     clicked: signal(false),
-    hovered: computed(() => currentHoveredNode.value === element),
+    hovered: computed(() => currentHoveredNode.value?.id === element.id),
     yogaNode,
     parent: null,
     children,

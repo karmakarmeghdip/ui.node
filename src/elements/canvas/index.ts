@@ -2,7 +2,7 @@ import { iterateNodeTree } from "../../core/Layout";
 import { paintElement, type Element } from "./Element";
 import type { Image } from "./Image";
 import type { Path } from "./Path";
-import type { Text } from "./Text";
+import { paintText, type Text } from "./Text";
 
 /**
  * A union type representing all possible node types in the UI tree.
@@ -57,6 +57,9 @@ export function paintNode(node: UINode) {
   switch (node.type) {
     case "element":
       paintElement(node);
+      break;
+    case "text":
+      paintText(node);
       break;
     // TODO: Implement paint functions for other element types
     default:

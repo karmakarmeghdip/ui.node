@@ -1,5 +1,9 @@
+import type { CanvasRenderingContext2D } from "skia-canvas";
 import { type Style } from "../../style/Style";
-import { Element, type BaseElement } from "./Element";
+import { Element, paintElement, type BaseElement } from "./Element";
+import { enqueueDrawCommand } from "../../core/Renderer";
+import { paintBackround } from "../../style/Background";
+import { paintBorder } from "../../style/Border";
 
 /**
  * Represents a Text element in the UI tree.
@@ -26,15 +30,22 @@ export function Text(content: string, style: Style): Text {
   return text;
 }
 
-// TODO: Implement text measurement and painting
-// export function paintText(text: Text) {
-//     const x = (text.position?.x ?? 0);
-//     const y = (text.position?.y ?? 0);
-//     enqueueDrawCommand((ctx) => {
-//         // ...
-//     });
-// }
+export function paintText(text: Text) {
+  const x = (text.position?.x || 0);
+  const y = (text.position?.y || 0);
+  enqueueDrawCommand((ctx) => {
+    ctx.font = text.style.value.fontFamily + " " + (text.style.value.fontSize || 16);
+    ctx.fillStyle = text.style.value.color || "black";
+    ctx.fillText(text.content, x, y + (text.style.value.fontSize || 16)); // Adjust y to account for font size
+    paintBackround(ctx, x, y, text);
+    paintBorder(ctx, x, y, text);
+  });
+}
 
-// export function calculateTextElementsDimensions(text: Text) {
-//     // ...
-// }
+export function calculateTextElementsDimensions(text: Text, ctx: CanvasRenderingContext2D) {
+  ctx.font = `${text.style.value.fontSize || 16}px ${text.style.value.fontFamily}`;
+  const metrics = ctx.measureText(text.content);
+  console.log(`Measured text "${text.content}" width: ${metrics.width}`);
+  text.style.value.width = metrics.width;
+  text.style.value.height = text.style.value.fontSize || 16; // TODO: More accurate height calculation and handling multi-line text
+}
