@@ -1,20 +1,31 @@
 {
-  "name": "node_skia_ui",
-  "module": "index.ts",
+  "name": "ui.node",
+  "version": "0.1.0",
+  "description": "A simple and efficient UI framework for creating graphical user interfaces in Node.js.",
+  "main": "./dist/index.js",
+  "module": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
   },
-  "peerDependencies": {
+  "devDependencies": {
+    "@preact/signals-debug": "^1.0.0",
+    "@types/bun": "1.2.21",
+    "tsx": "^4.20.5",
     "typescript": "^5"
   },
   "dependencies": {
     "@preact/signals-core": "^1.12.1",
-    "skia-canvas": "3.0.4",
+    "skia-canvas": "3.0.6",
     "yoga-layout": "^3.2.1"
   },
   "trustedDependencies": [
+    "esbuild",
     "skia-canvas"
   ]
 }

@@ -1,102 +1,81 @@
-import type { CanvasRenderingContext2D, MouseEventProps, Window } from "skia-canvas";
-import { applyStyleToNode, type Style } from "../../types/Style";
-import Yoga, { type Node } from "yoga-layout";
-import { signal, Signal } from "@preact/signals-core";
+import { computed, signal, type Signal } from "@preact/signals-core";
+import { applyStyleToNode, type Style } from "../../style/Style";
+import { type Node } from "yoga-layout";
+import Yoga from "yoga-layout";
+import type { UINode } from ".";
+import { paintBackround } from "../../style/Background";
+import { paintBorder } from "../../style/Border";
+import { enqueueDrawCommand } from "../../core/Renderer";
+import { currentHoveredNode } from "../../core/Input";
 
-export class Element {
-    style: Style;
-    protected yogaNode: Node;
-    private x: number = 0;
-    private y: number = 0;
-    private children: Element[];
-    onClick: ((e: {
-        target: Window;
-    } & MouseEventProps) => void) | null;
-    hover: Signal<({
-        hover: boolean;
-        target: Window;
-    } & MouseEventProps) | null>;
-    constructor(style: Style) {
-        this.children = [];
-        this.style = style;
-        this.yogaNode = Yoga.Node.create();
-        applyStyleToNode(this.yogaNode, this.style);
-        this.onClick = null;
-        this.hover = signal(null);
-    }
-    getYogaNode() {
-        return this.yogaNode;
-    }
-    appendChild(child: Element) {
-        // Inherit styles from parent
-        child.style = { ...this.style, ...child.style };
-        this.children.push(child);
-        this.yogaNode.insertChild(child.getYogaNode(), this.yogaNode.getChildCount());
-    }
-    removeChild(child: Element) {
-        const index = this.children.indexOf(child);
-        if (index !== -1) {
-            this.children.splice(index, 1);
-            const childNode = child.getYogaNode();
-            this.yogaNode.removeChild(childNode);
-            childNode.freeRecursive();
-        }
-    }
-    removeChildAt(index: number) {
-        const child = this.children[index];
-        if (!child) return;
-        this.children.splice(index, 1);
-        const childNode = child.getYogaNode();
-        this.yogaNode.removeChild(childNode);
-        childNode.freeRecursive();
-    }
-    render(ctx: CanvasRenderingContext2D, x?: number, y?: number) {
-        this.x = x || 0;
-        this.y = y || 0;
-        if (this.style.backgroundColor) {
-            ctx.fillStyle = this.style.backgroundColor;
-            ctx.fillRect(
-                this.x + this.yogaNode.getComputedLeft(),
-                this.y + this.yogaNode.getComputedTop(),
-                this.yogaNode.getComputedWidth(),
-                this.yogaNode.getComputedHeight()
-            );
-        }
-        if (this.style.borderColor) {
-            ctx.strokeStyle = this.style.borderColor;
-            ctx.lineWidth = this.style.border?.width || 1;
-            ctx.strokeRect(
-                this.x + this.yogaNode.getComputedLeft(),
-                this.y + this.yogaNode.getComputedTop(),
-                this.yogaNode.getComputedWidth(),
-                this.yogaNode.getComputedHeight()
-            );
-        }
-        this.children.forEach(child => child.render(ctx, this.x + this.yogaNode.getComputedLeft(), this.y + this.yogaNode.getComputedTop()));
-    }
-    handleMouseEvent(event: {
-        target: Window;
-        type: "mouseup" | "mousedown" | "mousemove";
-    } & MouseEventProps) {
-        const x = event.x;
-        const y = event.y;
-        const left = this.x + this.yogaNode.getComputedLeft();
-        const top = this.y + this.yogaNode.getComputedTop();
-        const width = this.yogaNode.getComputedWidth();
-        const height = this.yogaNode.getComputedHeight();
-        // console.log(`Mouse event: ${event.type} at (${x}, ${y}), Left: ${left}, Top: ${top}, Width: ${width}, Height: ${height}`);
-        if (x >= left && x <= left + width && y >= top && y <= top + height) {
-            this.children.forEach(child => child.handleMouseEvent(event));
-            if (event.type === "mouseup" && this.onClick) {
-                this.onClick(event);
-            }
-            if (event.type === "mousemove" && !this.hover.value?.hover) {
-                this.hover.value = { ...event, hover: true };
-            }
-        } else {
-            if (event.type === "mousemove" && this.hover.value?.hover) {
-                this.hover.value = { ...event, hover: false };
-            }
-        }
-    }
+/**
+ * Represents the base properties shared by all UI nodes in the tree.
+ */
+export type BaseElement = {
+  /** A unique identifier for the node. */
+  id: string;
+  /** A signal holding the node's style properties. */
+  style: Signal<Style>;
+  /** The Yoga layout node associated with this UI node. */
+  yogaNode: Node;
+  /** The absolute screen position (x, y) of the node, calculated after layout. */
+  position?: { x: number; y: number };
+  /** A signal indicating if the node is currently being clicked. */
+  clicked: Signal<boolean>;
+  /** A computed signal that is true if the mouse is currently hovering over this node. */
+  hovered: Signal<boolean>;
+  /** A reference to the parent UI node, or null if it's the root. */
+  parent: UINode | null;
+  /** An array of child UI nodes. */
+  children: UINode[];
+};
+
+/**
+ * Represents a basic container element in the UI tree.
+ */
+export type Element = BaseElement & {
+  /** The type discriminator for this node. */
+  type: "element";
+};
+
+/**
+ * Factory function to create a new Element node.
+ * @param style The initial style properties for the element.
+ * @param children Child UI nodes to be nested within this element.
+ * @returns A new Element node.
+ */
+export function Element(style: Style, ...children: UINode[]): UINode {
+  const yogaNode = Yoga.Node.create();
+  applyStyleToNode(yogaNode, style);
+  const element: Element = {
+    id: crypto.randomUUID(),
+    type: "element",
+    style: signal(style),
+    clicked: signal(false),
+    hovered: computed(() => currentHoveredNode.value?.id === element.id),
+    yogaNode,
+    parent: null,
+    children,
+  };
+  // Assign parent and insert children into Yoga node
+  for (const child of children) {
+    child.parent = element;
+    element.yogaNode.insertChild(
+      child.yogaNode,
+      element.yogaNode.getChildCount(),
+    );
+  }
+  return element;
+}
+
+/**
+ * Enqueues draw commands to render an Element node.
+ * This includes drawing the background color and borders.
+ * @param element The Element node to paint.
+ */
+export function paintElement(element: Element) {
+  const x = element.position?.x ?? 0;
+  const y = element.position?.y ?? 0;
+  enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));
+  enqueueDrawCommand((ctx) => paintBorder(ctx, x, y, element));
 }

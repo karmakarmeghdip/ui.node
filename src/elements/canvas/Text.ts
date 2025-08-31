@@ -1,55 +1,51 @@
 import type { CanvasRenderingContext2D } from "skia-canvas";
-import { Element } from "./Element";
-import type { Style } from "../../types/Style";
+import { type Style } from "../../style/Style";
+import { Element, paintElement, type BaseElement } from "./Element";
+import { enqueueDrawCommand } from "../../core/Renderer";
+import { paintBackround } from "../../style/Background";
+import { paintBorder } from "../../style/Border";
 
-export class Text extends Element {
-    private static textElems: Text[] = [];
-    private content: string;
+/**
+ * Represents a Text element in the UI tree.
+ */
+export type Text = BaseElement & {
+  /** The type discriminator for this node. */
+  type: "text";
+  /** The string content of the text node. */
+  content: string;
+};
 
-    constructor(content: string, style: Style) {
-        super(style);
-        this.content = content;
-        Text.textElems.push(this);
-    }
+/**
+ * Factory function to create a new Text node.
+ * @param content The string content of the text.
+ * @param style The style properties for the text element.
+ * @returns A new Text node.
+ */
+export function Text(content: string, style: Style): Text {
+  const text: Text = {
+    ...Element(style),
+    type: "text",
+    content,
+  };
+  return text;
+}
 
-    override render(ctx: CanvasRenderingContext2D, x: number, y: number) {
-        super.render(ctx, x, y);
-        ctx.fillStyle = this.style.color || "black";
-        ctx.font = `${this.style.fontSize || 16}px ${this.style.fontFamily || "Arial"}`;
+export function paintText(text: Text) {
+  const x = (text.position?.x || 0);
+  const y = (text.position?.y || 0);
+  enqueueDrawCommand((ctx) => {
+    ctx.font = text.style.value.fontFamily + " " + (text.style.value.fontSize || 16);
+    ctx.fillStyle = text.style.value.color || "black";
+    ctx.fillText(text.content, x, y + (text.style.value.fontSize || 16)); // Adjust y to account for font size
+    paintBackround(ctx, x, y, text);
+    paintBorder(ctx, x, y, text);
+  });
+}
 
-        const textX = x + this.yogaNode.getComputedLeft();
-        const textY = y + this.yogaNode.getComputedTop();
-
-        const textMetrics = ctx.measureText(this.content);
-
-        ctx.fillText(this.content, textX, textY + (this.style.fontSize || 16));
-    }
-
-    setMeasuredDimensions(ctx: CanvasRenderingContext2D) {
-        const textMetrics = ctx.measureText(this.content);
-        this.yogaNode.setWidth(textMetrics.width);
-        this.yogaNode.setHeight(textMetrics.lines.length * (this.style.fontSize || 16));
-    }
-
-    static getTextElements(): Text[] {
-        return Text.textElems;
-    }
-
-    static calculateTextElementsDimensions(ctx: CanvasRenderingContext2D) {
-        Text.textElems.forEach(textElem => {
-            textElem.setMeasuredDimensions(ctx);
-        });
-    }
-
-    override appendChild(child: Element): void {
-        throw new Error("Text elements cannot have children.");
-    }
-
-    override removeChild(child: Element): void {
-        throw new Error("Text elements cannot have children.");
-    }
-
-    override removeChildAt(index: number): void {
-        throw new Error("Text elements cannot have children.");
-    }
+export function calculateTextElementsDimensions(text: Text, ctx: CanvasRenderingContext2D) {
+  ctx.font = `${text.style.value.fontSize || 16}px ${text.style.value.fontFamily}`;
+  const metrics = ctx.measureText(text.content);
+  console.log(`Measured text "${text.content}" width: ${metrics.width}`);
+  text.style.value.width = metrics.width;
+  text.style.value.height = text.style.value.fontSize || 16; // TODO: More accurate height calculation and handling multi-line text
 }
