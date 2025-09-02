@@ -2,17 +2,17 @@ import type { CanvasRenderingContext2D } from "skia-canvas";
 import { type Style } from "../../style/Style";
 import { Element, paintElement, type BaseElement } from "./Element";
 import { enqueueDrawCommand } from "../../core/Renderer";
-import { paintBackround } from "../../style/Background";
+import { paintBackground } from "../../style/Background";
 import { paintBorder } from "../../style/Border";
 
 /**
  * Represents a Text element in the UI tree.
  */
 export type Text = BaseElement & {
-  /** The type discriminator for this node. */
-  type: "text";
-  /** The string content of the text node. */
-  content: string;
+    /** The type discriminator for this node. */
+    type: "text";
+    /** The string content of the text node. */
+    content: string;
 };
 
 /**
@@ -22,30 +22,30 @@ export type Text = BaseElement & {
  * @returns A new Text node.
  */
 export function Text(content: string, style: Style): Text {
-  const text: Text = {
-    ...Element(style),
-    type: "text",
-    content,
-  };
-  return text;
+    const text: Text = {
+        ...Element(style),
+        type: "text",
+        content,
+    };
+    return text;
 }
 
 export function paintText(text: Text) {
-  const x = (text.position?.x || 0);
-  const y = (text.position?.y || 0);
-  enqueueDrawCommand((ctx) => {
-    ctx.font = text.style.value.fontFamily + " " + (text.style.value.fontSize || 16);
-    ctx.fillStyle = text.style.value.color || "black";
-    ctx.fillText(text.content, x, y + (text.style.value.fontSize || 16)); // Adjust y to account for font size
-    paintBackround(ctx, x, y, text);
-    paintBorder(ctx, x, y, text);
-  });
+    const x = (text.position?.x || 0);
+    const y = (text.position?.y || 0);
+    enqueueDrawCommand((ctx) => {
+        ctx.font = (text.style.value.fontSize || 16) + "px " + (text.style.value.fontFamily || "Arial");
+        ctx.fillStyle = text.style.value.color || "black";
+        ctx.fillText(text.content, x, y + (text.style.value.fontSize || 16)); // Adjust y to account for font size
+        paintBackground(ctx, x, y, text);
+        paintBorder(ctx, x, y, text);
+    });
 }
 
 export function calculateTextElementsDimensions(text: Text, ctx: CanvasRenderingContext2D) {
-  ctx.font = `${text.style.value.fontSize || 16}px ${text.style.value.fontFamily}`;
-  const metrics = ctx.measureText(text.content);
-  console.log(`Measured text "${text.content}" width: ${metrics.width}`);
-  text.style.value.width = metrics.width;
-  text.style.value.height = text.style.value.fontSize || 16; // TODO: More accurate height calculation and handling multi-line text
+    ctx.font = `${text.style.value.fontSize || 16}px ${text.style.value.fontFamily || "Arial"}`;
+    const metrics = ctx.measureText(text.content);
+    console.log(`Measured text "${text.content}" width: ${metrics.width}`);
+    text.style.value.width = metrics.width;
+    text.style.value.height = text.style.value.fontSize || 16; // TODO: More accurate height calculation and handling multi-line text
 }

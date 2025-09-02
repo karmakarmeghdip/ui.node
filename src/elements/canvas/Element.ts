@@ -3,7 +3,7 @@ import { applyStyleToNode, type Style } from "../../style/Style";
 import { type Node } from "yoga-layout";
 import Yoga from "yoga-layout";
 import type { UINode } from ".";
-import { paintBackround } from "../../style/Background";
+import { paintBackground } from "../../style/Background";
 import { paintBorder } from "../../style/Border";
 import { enqueueDrawCommand } from "../../core/Renderer";
 import { currentHoveredNode } from "../../core/Input";
@@ -76,6 +76,6 @@ export function Element(style: Style, ...children: UINode[]): UINode {
 export function paintElement(element: Element) {
   const x = element.position?.x ?? 0;
   const y = element.position?.y ?? 0;
-  enqueueDrawCommand((ctx) => paintBackround(ctx, x, y, element));
+  enqueueDrawCommand((ctx) => paintBackground(ctx, x, y, element));
   enqueueDrawCommand((ctx) => paintBorder(ctx, x, y, element));
 }

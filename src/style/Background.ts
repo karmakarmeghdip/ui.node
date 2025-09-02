@@ -8,7 +8,7 @@ import type { UINode } from "../elements/canvas";
  * @param y The absolute y-coordinate of the node.
  * @param element The UI node to paint the background for.
  */
-export function paintBackround(
+export function paintBackground(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
