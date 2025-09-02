@@ -5,9 +5,6 @@ import { enqueueDrawCommand } from "../../core/Renderer";
 import { paintBackground } from "../../style/Background";
 import { paintBorder } from "../../style/Border";
 
-/**
- * Represents a Text element in the UI tree.
- */
 export type Text = BaseElement & {
     /** The type discriminator for this node. */
     type: "text";
@@ -16,7 +13,8 @@ export type Text = BaseElement & {
 };
 
 /**
- * Factory function to create a new Text node.
+ * Factory function to create a new Text element node.
+ * Text elements are UI nodes that display textual content with customizable styling.
  * @param content The string content of the text.
  * @param style The style properties for the text element.
  * @returns A new Text node.

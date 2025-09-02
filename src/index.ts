@@ -1,8 +1,3 @@
-/**
- * @module Node Skia UI
- * @description The public API for the Node Skia UI library.
- */
-
 // Core UI node factory functions
 export { Element, Image, Path, Text } from "./elements/canvas";
 

@@ -30,16 +30,14 @@ export type BaseElement = {
   children: UINode[];
 };
 
-/**
- * Represents a basic container element in the UI tree.
- */
 export type Element = BaseElement & {
   /** The type discriminator for this node. */
   type: "element";
 };
 
 /**
- * Factory function to create a new Element node.
+ * Factory function to create a new Element container node.
+ * Elements are basic containers that can hold child UI nodes and have style properties.
  * @param style The initial style properties for the element.
  * @param children Child UI nodes to be nested within this element.
  * @returns A new Element node.

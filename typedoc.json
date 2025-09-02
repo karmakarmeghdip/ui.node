@@ -1,0 +1,19 @@
+{
+    "entryPoints": [
+        "./src/index.ts"
+    ],
+    "out": "./docs",
+    "exclude": [
+        "**/tests/**",
+        "**/examples/**",
+        "**/node_modules/**"
+    ],
+    "includeVersion": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "excludeExternals": true,
+    "readme": "./README.md",
+    "name": "Node Skia UI",
+    "tsconfig": "./tsconfig.json",
+    "cleanOutputDir": true
+}
