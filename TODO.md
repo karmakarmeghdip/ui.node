@@ -1,6 +1,6 @@
 # Node Skia UI - Development Progress & TODO
 
-*Last updated: August 29, 2025*
+*Last updated: September 2, 2025*
 
 > **Development Context**: This project is being developed during evening hours after a day job. Deadlines are intentionally relaxed and realistic to maintain steady progress without burnout.
 
@@ -17,36 +17,54 @@ After thorough codebase analysis, the project has significantly more implemented
 - ✅ **Comprehensive Style System** - Rich style types with layout/visual property separation.
 - ✅ **Working Draw Queue Renderer** - Producer-consumer model with command processing, correctly hooked into the window's `frame` event.
 - ✅ **Multi-Window Support** - Window creation, management, and proper cleanup.
-- ✅ **Basic Input Management** - Hit-testing and `hovered`/`clicked` signal management in `Input.ts`.
+- ✅ **Complete Input Management** - Hit-testing, mouse event processing, and reactive `clicked`/`hovered` signals fully implemented.
 - ✅ **Comprehensive Testing** - Layout.test.ts and Renderer.test.ts with 100+ test cases.
+- ✅ **Text Rendering** - Complete text rendering implementation with font styling, measurement, and positioning in `paintText` function.
 
 ---
 
 ## 🚧 **ACTUAL GAPS** - Final Integration Steps
 
-### Phase 1: Complete Element Renderers ⚡ **HIGH PRIORITY**
-*Target Completion: **September 10, 2025***
+### Phase 0: Fix Event Loop Architecture ⚡ **CRITICAL PRIORITY**
+*Target Completion: **September 12, 2025***
 
-- [ ] **Text Rendering** *(~1-2 evening sessions)*
-  - [ ] Implement the `paintNode` case for the `Text` element type.
-  - [ ] Use `skia-canvas` context to draw text based on `style` properties (`fontFamily`, `fontSize`, `color`).
-  - [ ] Implement basic text measurement if needed for layout.
+- [ ] **Resolve Node.js Event Loop Blocking** *(~3-5 evening sessions)*
+  - **Problem**: Current implementation blocks the Node.js event loop, preventing asynchronous operations and making the app unsuitable for real desktop applications.
+  - **Solution Option A**: Use skia-canvas "node" event loop mode with continuous polling (may cause performance issues)
+  - **Solution Option B**: Implement dual-thread architecture:
+    - Main thread: Handle async I/O operations and application logic
+    - Worker thread: Dedicated renderer thread for window management, layout, and rendering
+    - Communication via MessagePort between threads
+    - Check for messages from parent in the frame handler
+  - [ ] Research and prototype both approaches
+  - [ ] Implement the chosen solution
+  - [ ] Test with async operations to ensure non-blocking behavior
+
+---
+
+### Phase 1: Complete Remaining Element Renderers ⚡ **HIGH PRIORITY**
+*Target Completion: **September 15, 2025***
+
+- [x] **Text Rendering** ✅ **COMPLETED**
+  - [x] Implement the `paintNode` case for the `Text` element type.
+  - [x] Use `skia-canvas` context to draw text based on `style` properties (`fontFamily`, `fontSize`, `color`).
+  - [x] Implement text measurement for layout (`calculateTextElementsDimensions`).
   
-- [ ] **Image & Path Rendering** *(~1-2 evening sessions)*
+- [ ] **Image & Path Rendering** *(~2-3 evening sessions)*
   - [ ] Implement the `paintNode` case for the `Image` element type, including asynchronous image loading.
   - [ ] Implement the `paintNode` case for the `Path` element type, using `skia-canvas` to render SVG-like path data.
 
 ---
 
-### Phase 2: Full Interactivity 🎮 **MEDIUM PRIORITY**
+### Phase 2: Advanced Interactivity 🎮 **MEDIUM PRIORITY**
 *Target Completion: **September 25, 2025***
 
-- [ ] **Enhance Input Manager** *(~2-3 evening sessions)*
-  - [ ] Add event handler properties to `UINode` types (e.g., `onClick`, `onHover`, `onKeyDown`).
-  - [ ] In `Input.ts`, invoke these handlers on the corresponding nodes when events occur.
-  - [ ] Add support for keyboard events and focus management.
+- [x] **Enhanced Input Manager** ✅ **COMPLETED**
+  - [x] Hit-testing algorithm to find the topmost node under cursor.
+  - [x] Reactive `clicked` and `hovered` signals with proper state management.
+  - [x] Mouse event processing (mousedown, mouseup, mousemove) integrated with UI tree.
 
-- [ ] **Demo Application** *(~1-2 evening sessions)*
+- [ ] **Demo Application** *(~2-3 evening sessions)*
   - [ ] Fix missing `./test/demo_app` import in `demo_api.js` or create a new entry point.
   - [ ] Create a working demo that showcases interactive elements (buttons, hover effects) to validate the event system.
 
@@ -75,8 +93,10 @@ After thorough codebase analysis, the project has significantly more implemented
 
 ## 📋 **IMMEDIATE NEXT STEPS** (This Week)
 
-1.  **Priority 1: Implement Text Rendering** - Create the paint logic for the `Text` element.
-2.  **Priority 2: Implement Image Rendering** - Create the paint logic for the `Image` element.
-3.  **Priority 3: Enhance Input Manager** - Add `onClick` handlers to UI nodes and invoke them from `Input.ts`.
+1.  **Priority 0: Fix Event Loop Blocking** - Research and implement non-blocking architecture (dual-thread or node event loop mode).
+2.  **Priority 1: Implement Image Rendering** - Create the paint logic for the `Image` element.
+3.  **Priority 2: Implement Path Rendering** - Create the paint logic for the `Path` element.
 
-**Key Insight**: The foundation is solid. The main remaining tasks are to add the specific paint logic for each element type and wire up the already-functional input system to event handler callbacks.
+**Critical Issue**: The current implementation blocks the Node.js event loop, making it unsuitable for real desktop applications. This must be resolved before continuing with other features.
+
+**Key Insight**: Both text rendering AND input handling are complete, but the blocking event loop architecture is a critical blocker that needs immediate attention.

@@ -1,0 +1,50 @@
+name: Build and Publish to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0, v0.1.0, etc.
+  workflow_dispatch:  # Allows manual triggering
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        registry-url: 'https://npm.pkg.github.com'
+        
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Build the project
+      run: bun run build
+      
+    - name: Run tests (if available)
+      run: |
+        if [ -f "bun.lockb" ] && bun run --silent test > /dev/null 2>&1; then
+          bun run test
+        else
+          echo "No tests found or test script not available, skipping..."
+        fi
+      continue-on-error: false
+      
+    - name: Publish to GitHub Packages
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

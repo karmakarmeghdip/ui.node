@@ -1,5 +1,5 @@
 {
-  "name": "ui.node",
+  "name": "@karmakarmeghdip/ui.node",
   "version": "0.1.0",
   "description": "A simple and efficient UI framework for creating graphical user interfaces in Node.js.",
   "main": "./dist/index.js",
@@ -7,6 +7,13 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karmakarmeghdip/ui.node.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "files": [
     "dist"
   ],
