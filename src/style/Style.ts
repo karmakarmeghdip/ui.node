@@ -46,6 +46,7 @@ export type Style = {
   color?: string | CanvasGradient | CanvasPattern | CanvasTexture;
   backgroundColor?: string;
   borderColor?: string;
+  borderRadius?: number | number[] | undefined; // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/roundRect#radii
 
   // Font properties
   fontFamily?: string;

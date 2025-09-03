@@ -6,7 +6,7 @@ import { signal } from "@preact/signals-core";
  * A signal that holds the currently hovered UI node.
  * This is updated by the `handleEvents` function.
  */
-export const currentHoveredNode = signal<UINode | null>(null);
+export const currentHoveredNode = signal<{ node: UINode, e: MouseEventProps } | null>(null);
 
 /**
  * Handles mouse events for the UI tree and performs basic hit-testing.
@@ -39,13 +39,13 @@ export function handleEvents(
     } else {
       // No more specific child found, this is the target node
       if (e.type === "mousedown") {
-        currentNode.clicked.value = true;
+        currentNode.clicked.value = e;
       }
       if (e.type === "mouseup") {
-        currentNode.clicked.value = false;
+        currentNode.clicked.value = null;
       }
-      if (e.type === "mousemove" && currentHoveredNode.value !== currentNode) {
-        currentHoveredNode.value = currentNode;
+      if (e.type === "mousemove" && currentHoveredNode.value?.node !== currentNode) {
+        currentHoveredNode.value = { node: currentNode, e };
       }
       break;
     }

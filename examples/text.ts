@@ -8,6 +8,7 @@ import { effect } from "@preact/signals-core";
 const button = Element({
     backgroundColor: "#89b4fa",
     border: { width: 1, edge: Edge.All },
+    borderRadius: 10,
     padding: { edge: Edge.All, value: 8 },
     margin: { edge: Edge.Top, value: 16 },
 
@@ -36,18 +37,19 @@ const app = Element({
     button,
 );
 effect(() => {
-    console.log("Button hovered or child hovered:", button.hovered.value, button.children[0].hovered.value);
-    if (button.hovered.value || button.children[0].hovered.value) {
+    // console.log("Button hovered or child hovered:", button.hovered.value, button.children[0].hovered.value);
+    if (button.hovered.value) {
         button.style.value = { ...button.style.peek(), backgroundColor: "#7287fd" };
     } else {
         button.style.value = { ...button.style.peek(), backgroundColor: "#89b4fa" };
     }
 });
 
-button.clicked.subscribe((c) => {
-    if (c)
-        console.log("Button clicked!");
-});
+effect(() => {
+    if (button.clicked.value) {
+        console.log("Button Clicked")
+    }
+})
 
 const win = createWindow(app, 800, 600, "Text Example");
 

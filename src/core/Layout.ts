@@ -9,18 +9,20 @@ import { calculateTextElementsDimensions } from "../elements/canvas/Text";
  * @param node The root UINode to start traversal from.
  * @param callback A function to apply to each node in the tree.
  */
-export function iterateNodeTree(
+export function iterateNodeTree<T>(
   node: UINode,
-  callback: (node: UINode) => void,
-) {
-  callback(node);
+  callback: (node: UINode) => T,
+): T[] {
+  const res: T[] = []
+  res.push(callback(node));
   const stack: UINode[] = [...node.children];
   while (stack.length > 0) {
     const current = stack.pop();
     if (!current) continue;
-    callback(current);
+    res.push(callback(current));
     stack.push(...current.children);
   }
+  return res;
 }
 
 /**

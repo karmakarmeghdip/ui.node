@@ -19,5 +19,12 @@ export function paintBackground(
   const width = element.yogaNode.getComputedWidth();
   const height = element.yogaNode.getComputedHeight();
   ctx.fillStyle = style.backgroundColor;
+  if (style.borderRadius) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, style.borderRadius);
+    ctx.closePath();
+    ctx.fill();
+    return;
+  }
   ctx.fillRect(x, y, width, height);
 }
